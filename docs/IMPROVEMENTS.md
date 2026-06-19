@@ -43,5 +43,39 @@ and proposed perturbation-instability as a new detector beyond the debate panel 
 |----|------------|----------------|-------|
 | **H6** | A single load-bearing inference corrupts everything downstream, so spending verification budget by **betweenness centrality** in the claim-dependency DAG catches >40% more root errors than uniform | `ClaimGraph` (directed Brandes betweenness) + `verify_within_budget` checks the most-central nodes first; CLI `verify-graph` | `claim_graph.py`, CLI `verify-graph` |
 
-Still open (lower value/effort ratio, not yet built): N3 (reasoning-trajectory anomaly detector —
-needs step embeddings), H1-full (auto-route executable sub-claims).
+## Banked backlog (specified, not yet built)
+
+Surfaced by the self-improvement runs; each has enough spec to implement directly.
+
+### C5 — cross-domain calibration transfer  *(iteration 3, genuinely new tier)*
+**Idea:** calibrate the falsifier/verifier's *abstention threshold* (when to assert vs. mark
+`neutral`) on a domain with abundant **executable ground truth** (chemistry reaction outcomes,
+code/unit-tests, DB lookups), then **transfer** those thresholds to a high-falsification-cost
+domain (e.g. biomedical hypothesis generation) where labels are scarce.
+**Why:** in cheap-to-falsify domains we can measure exactly when the judge is over/under-confident
+and tune the assert/abstain cutoff; that calibration should transfer better than calibrating on
+scarce in-domain labels.
+**Implementation sketch:**
+- `calibration.py`: a `Calibration` holding thresholds (min disagreement / min support to assert;
+  neutral-band cutoffs) + `calibrate(labeled_examples)` that sweeps the cutoff to minimise expected
+  calibration error / false-assert rate against executable ground truth, and `save/load`.
+- Wire into `DebatePanelFalsifier` / `TieredVerifier`: load a calibration and apply its abstain
+  cutoff; `--calibration path` on `discover`.
+- Eval: reuse the labeled `evaluation/` harness to measure ECE and false-assert rate per domain.
+**Falsifiable prediction (from the run):** chemistry-calibrated thresholds cut the biomedical
+hallucinated-claim rate by >25% vs in-domain calibration; transfer benefit scales inversely with
+the source domain's executable-check density.
+
+### C6 — bridge-distance-weighted verification budget  *(extension of H6)*
+Weight verification effort not only by DAG betweenness but by the bridged sources' citation
+distance (distance is a shared latent for novelty AND hallucination prior). Small extension to
+`claim_graph.py`: combine centrality with a per-claim bridge-distance prior.
+
+### Other open: N3 (reasoning-trajectory anomaly detector — needs step embeddings),
+H1-full (auto-route executable sub-claims).
+
+## Convergence note
+By iteration 3 the loop largely **re-derived** already-shipped features (~5/8 candidates, including
+re-proposing N4+H6 one turn after they shipped) — a clear near-convergence signal for this
+corpus+question. Rising re-derivation rate / falling novelty rate is a usable stopping criterion;
+new tiers now require changing the input corpus/question. C5 and C6 are the surviving novel tail.
