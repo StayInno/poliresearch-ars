@@ -12,6 +12,7 @@ which mapped directly onto the system's own weaknesses. The High-value ones were
 | **H5** | Hallucination concentrates in **numeric** claims (~3× refutation) | `has_numeric_claim()`; `TieredVerifier` routes numeric claims to the strict falsification path regardless of type | `models.py`, `agents/verifier.py` |
 | **H7** | **Temporal rediscovery** (freeze corpus at year X, rediscover X+1..X+3 findings) is a manipulation-resistant novelty metric | `split_corpus_by_year()` + `rediscovery_rate()` benchmark | `evaluation/temporal.py` |
 | **H8** | Inability to pre-register a **refutation protocol** is a strong hallucination signal (AUC>0.75 vs self-confidence <0.6) | `Generator.refutable()` drops hypotheses for which no concrete falsifier can be stated, *before* verification | `agents/generator.py`, wired in `discovery.py` |
+| **H3** | Novelty concentrates in **cross-corpus bridges**: pairs sharing no authors/citations at *intermediate* distance (inverted-U) | `bridge_pairs()` selects no-shared-author/no-shared-ref pairs in a mid-band similarity, steers generation toward them | `bridges.py`, wired in `discovery.py` (`bridge_steering`, on by default) |
 
 Notably, **H2 is exactly the gate-5 grounding gap** flagged in the original system critique, and
 H1/H4 re-validate the generator/verifier-separation and role-diversity choices already made — i.e.
@@ -21,5 +22,5 @@ Defaults: H2/H5/H8 are always on (cheap, strict-by-default). H4 (`conflicting_pr
 in `DiscoveryEngine` because it ~doubles judge calls — stage it after the cheaper signals, as the
 system's own synthesis recommended. H7 is a benchmark you run, not a runtime change.
 
-Still open (lower value/effort ratio, not yet built): H3 (citation-distance-steered generation),
-H6 (claim-DAG betweenness-weighted verification budget), H1-full (auto-route executable sub-claims).
+Still open (lower value/effort ratio, not yet built): H6 (claim-DAG betweenness-weighted
+verification budget), H1-full (auto-route executable sub-claims).

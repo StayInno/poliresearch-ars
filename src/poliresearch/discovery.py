@@ -78,9 +78,10 @@ def _norm(text: str) -> str:
 class DiscoveryEngine:
     def __init__(self, llm: LLM, mailto: str | None = None, *, max_workers: int = 8,
                  falsifier_llm: LLM | None = None, refutability_filter: bool = True,
-                 conflicting_priors: bool = False):
+                 conflicting_priors: bool = False, bridge_steering: bool = True):
         self.generator = Generator(llm)
         self.refutability_filter = refutability_filter   # H8
+        self.bridge_steering = bridge_steering           # H3
         self.falsifier = DebatePanelFalsifier(falsifier_llm or llm,
                                               conflicting_priors=conflicting_priors)  # H4
         self.verifier = UnifiedVerifier(mailto=mailto, max_workers=max_workers)
@@ -94,10 +95,17 @@ class DiscoveryEngine:
         out = DiscoveryResult(goal=goal, corpus_papers=len({c.source for c in corpus.chunks}),
                               cycles=cycles)
 
+        bridges = ""
+        if self.bridge_steering:               # H3: steer toward cross-corpus bridges
+            from .bridges import bridge_framing
+            bridges = bridge_framing(corpus)
+
         for cycle in range(cycles):
             # Read path = the DISTILLED notebook (not raw history): compact, curated context.
             framing = mem.context() + "\n\nPropose NOVEL hypotheses that synthesize across " \
                 "multiple papers — connections not stated in any single paper."
+            if bridges:
+                framing += "\n\n" + bridges
             hypotheses = self.generator.propose(goal, corpus, n=rollouts, framing=framing)
             fresh = [h for h in hypotheses if _norm(h) not in seen]
             if self.refutability_filter and fresh:

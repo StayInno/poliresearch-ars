@@ -95,3 +95,31 @@ def test_temporal_split_and_rediscovery(tmp_path):
     res = rediscovery_rate(
         ["attention mass graded precision improves kv cache quantization"], holdout, threshold=0.3)
     assert res["rediscovered"] == 1 and res["rate"] == 1.0
+
+
+# --- H3: cross-corpus bridge finding ---
+def test_bridge_pairs_picks_intermediate_no_shared():
+    from poliresearch.bridges import bridge_pairs
+    chunks = [
+        # A and B: topically adjacent (share kv/cache/quantization), no shared authors/refs -> bridge
+        Chunk("A.txt#0", "A.txt",
+              "Title: A\nAuthors: Smith\nReferences: W9\n\nAbstract: kv cache quantization "
+              "reduces memory for transformer inference attention."),
+        Chunk("B.txt#0", "B.txt",
+              "Title: B\nAuthors: Jones\nReferences: W8\n\nAbstract: attention sparsity prunes "
+              "transformer compute and cache memory at inference."),
+        # C: near-duplicate of A (shares author Smith) -> excluded (too near)
+        Chunk("C.txt#0", "C.txt",
+              "Title: C\nAuthors: Smith\nReferences: W7\n\nAbstract: kv cache quantization "
+              "reduces memory for transformer inference attention."),
+        # D: totally unrelated -> excluded (incoherent, sim ~0)
+        Chunk("D.txt#0", "D.txt",
+              "Title: D\nAuthors: Lee\nReferences: W6\n\nAbstract: coral reef fish migration "
+              "patterns in tropical marine ecosystems."),
+    ]
+    corpus = Corpus(root=".", chunks=chunks, corpus_hash="h")
+    pairs = bridge_pairs(corpus, k=10, low=0.1, high=0.6)
+    titles = {frozenset((a, b)) for a, b, _ in pairs}
+    assert frozenset(("A", "B")) in titles          # the coherent, no-shared bridge
+    assert frozenset(("A", "C")) not in titles       # shared author Smith -> excluded
+    assert frozenset(("A", "D")) not in titles       # unrelated -> below band

@@ -122,7 +122,9 @@ def _cmd_discover(args, settings) -> int:
         return 2
     corpus = load_corpus(args.corpus or str(settings.corpus_dir))
     falsifier_llm = make_llm(settings, model=settings.falsifier_model)
-    engine = DiscoveryEngine(llm, mailto=settings.crossref_mailto, falsifier_llm=falsifier_llm)
+    engine = DiscoveryEngine(llm, mailto=settings.crossref_mailto, falsifier_llm=falsifier_llm,
+                             bridge_steering=not args.no_bridge,        # H3
+                             conflicting_priors=args.priors)            # H4
     print(f"Discovery: backend={resolve_backend(settings)}  corpus={len(corpus.chunks)} chunks  "
           f"cycles={args.cycles} x rollouts={args.rollouts}\n")
     res = engine.run(args.goal, corpus, cycles=args.cycles, rollouts=args.rollouts,
@@ -411,6 +413,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--corpus", default=None)
     s.add_argument("--cycles", type=int, default=3)
     s.add_argument("--rollouts", type=int, default=6, help="parallel hypotheses per cycle")
+    s.add_argument("--no-bridge", action="store_true", help="disable H3 cross-corpus bridge steering")
+    s.add_argument("--priors", action="store_true", help="enable H4 conflicting-priors abstention")
     s.set_defaults(func=_cmd_discover)
 
     s = sub.add_parser("evaluate", help="Measure the system against labeled datasets.")
