@@ -409,6 +409,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Force UTF-8 console output: results contain Unicode (≤, ×, em-dashes) that the Windows
+    # cp1252 codec cannot encode, which otherwise crashes printing mid-output.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     parser = build_parser()
     args = parser.parse_args(argv)
     settings = load_settings()

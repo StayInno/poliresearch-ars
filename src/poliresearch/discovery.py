@@ -122,6 +122,8 @@ class DiscoveryEngine:
         out.report = self._synthesize(goal, out.candidate_discoveries)
         path = f"{runs_dir}/discovery-{corpus.corpus_hash}.memory.json"
         try:
+            from pathlib import Path
+            Path(runs_dir).mkdir(parents=True, exist_ok=True)  # was silently failing if absent
             mem.save(path)
             out.world_model_path = path
         except Exception:
