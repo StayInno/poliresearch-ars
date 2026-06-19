@@ -153,6 +153,34 @@ def _cmd_obsidian(args, settings) -> int:
     return 0
 
 
+def _cmd_test_hypothesis(args, settings) -> int:
+    """CS/AI experiment loop: the Experimenter writes a self-contained test, the runner runs it.
+    A PASS is empirical support *under the experiment's own assumptions* — not proof; real-model
+    claims need a real model (torch/transformers) the runner may not have."""
+    from .llm import make_llm
+    from .agents.experimenter import Experimenter
+    from .experiment import ExperimentRunner
+    from .domain import get_domain
+
+    llm = make_llm(settings)
+    if not llm.available:
+        print("Needs an LLM (Claude Code CLI or ANTHROPIC_API_KEY).", file=sys.stderr)
+        return 2
+    framing = get_domain(args.domain or settings.domain_key).prompt_framing
+    code = Experimenter(llm).write_experiment(args.hypothesis, framing=framing)
+    if not code:
+        print("No experiment code was generated.")
+        return 1
+    print("=== generated experiment ===\n" + code + "\n")
+    res = ExperimentRunner(timeout_s=args.timeout).run_python(code)
+    print("=== result: " + res.verdict_line + " ===")
+    if res.stdout:
+        print(res.stdout)
+    if res.stderr and not res.success:
+        print("stderr:\n" + res.stderr[-1500:])
+    return 0 if res.success else 1
+
+
 def _cmd_sources(args, settings) -> int:
     """List keyed paper sources and whether each is enabled (key set) or disabled."""
     from .sources import REGISTRY
@@ -357,6 +385,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("sources", help="List keyed paper sources and their enabled/disabled state.")
     s.set_defaults(func=_cmd_sources)
+
+    s = sub.add_parser("test-hypothesis", help="Empirically test a hypothesis via the code-experiment loop.")
+    s.add_argument("hypothesis")
+    s.add_argument("--domain", default=None)
+    s.add_argument("--timeout", type=int, default=60)
+    s.set_defaults(func=_cmd_test_hypothesis)
 
     s = sub.add_parser("obsidian", help="Export the corpus as an Obsidian vault (graph of links).")
     s.add_argument("--corpus", default=None)
