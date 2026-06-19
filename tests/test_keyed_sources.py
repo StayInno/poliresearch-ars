@@ -69,6 +69,12 @@ def test_semantic_scholar_title_search():
     assert chk.exists and chk.title_match
 
 
+def test_semantic_scholar_empty_search_no_crash():
+    # regression: S2 search returning {"data": []} must not IndexError.
+    v = SemanticScholarVerifier(api_key="k", session=_Session({"/paper/search": _Resp(200, {"data": []})}))
+    assert not v.verify(Reference(title="nonexistent paper")).exists
+
+
 def test_semantic_scholar_sends_key_header():
     sess = _Session({"/paper/DOI:": _Resp(200, {"title": "T", "year": 2020, "authors": []})})
     SemanticScholarVerifier(api_key="secret", session=sess).verify(Reference(doi="10.1/x"))

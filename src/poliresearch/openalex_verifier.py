@@ -42,7 +42,8 @@ class OpenAlexVerifier:
             ident = ref.doi
         elif ref.title:
             res = self._get(_BY_TITLE.format(q=quote(ref.title)))
-            work = (res or {}).get("results", [None])[0] if isinstance(res, dict) else None
+            arr = res.get("results") or [] if isinstance(res, dict) else []
+            work = arr[0] if arr else None      # empty list when nothing matches
             ident = f"title:{ref.title[:40]}"
         else:
             return CitationCheck(doi="", exists=False, retracted=False, authors_match=None,

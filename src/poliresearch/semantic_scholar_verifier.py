@@ -39,7 +39,13 @@ class SemanticScholarVerifier:
                                  year_match=None, source="semanticscholar",
                                  error="no DOI/arXiv/title for Semantic Scholar")
         data = self._get(url)
-        paper = (data.get("data", [None])[0] if "search?" in url else data) if isinstance(data, dict) else None
+        if not isinstance(data, dict):
+            paper = None
+        elif "search?" in url:
+            arr = data.get("data") or []        # empty list when nothing matches
+            paper = arr[0] if arr else None
+        else:
+            paper = data if data.get("title") else None
         if not paper:
             return CitationCheck(doi=ident, exists=False, retracted=False, authors_match=None,
                                  year_match=None, source="semanticscholar",

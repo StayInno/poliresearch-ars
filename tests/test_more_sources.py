@@ -102,3 +102,9 @@ def test_unified_routes_titleonly_to_openalex():
         200, {"results": [{"title": "T", "publication_year": 2020, "authorships": []}]})})
     chk = v.verify(Reference(title="T"))
     assert chk.source == "openalex" and chk.exists
+
+
+def test_openalex_empty_title_results_no_crash():
+    # regression: OpenAlex title search returning {"results": []} must not IndexError.
+    v = OpenAlexVerifier(session=_Session({"title.search:": _Resp(200, {"results": []})}))
+    assert not v.verify(Reference(title="no such paper")).exists

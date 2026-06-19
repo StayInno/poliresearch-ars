@@ -26,3 +26,6 @@ mlruns/
 # Generated Obsidian vaults
 vault/
 vault_*/
+
+corpus_sdl/
+vault_sdl/
