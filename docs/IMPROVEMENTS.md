@@ -22,5 +22,21 @@ Defaults: H2/H5/H8 are always on (cheap, strict-by-default). H4 (`conflicting_pr
 in `DiscoveryEngine` because it ~doubles judge calls — stage it after the cheaper signals, as the
 system's own synthesis recommended. H7 is a benchmark you run, not a runtime change.
 
+## Iteration 2 (the loop critiquing its own iteration-1 additions)
+
+A second self-improvement run — now powered by the iteration-1 upgrades — produced 8 hypotheses
+that *audited the machinery iteration 1 added* and proposed the next tier. The High/Low ones shipped:
+
+| ID | Hypothesis | Implementation | Where |
+|----|------------|----------------|-------|
+| **N1** | A true claim is **stable under paraphrase**; a verdict that flips when the claim is reworded signals hallucination (AUC>0.8) | Debate falsifier paraphrases the claim and re-adjudicates; a flip → abstain (`neutral`) | `agents/falsifier.py` (`perturbation_check`) |
+| **N2** | A closed/distilling loop **silently collapses novelty** unless bridge-distance diversity is periodically re-injected | Discovery builds a larger bridge **pool** and shows a **rotating fresh slice** each cycle | `discovery.py` |
+| **N4** | Bridge-distance is a **tunable Pareto control** (novelty & hallucination both rise with distance; optimum is intermediate) | Band is now a parameter (`--bridge-low/--bridge-high`); `bridges` command shows the distance profile | `bridges.py`, CLI `bridges` |
+
+Notably, N1/N2 fix risks the system identified **in iteration-1's own additions**: it warned that
+bridge-steering (H3) + the distilling memory could converge to a low-novelty fixed point (→ N2),
+and proposed perturbation-instability as a new detector beyond the debate panel (→ N1).
+
 Still open (lower value/effort ratio, not yet built): H6 (claim-DAG betweenness-weighted
-verification budget), H1-full (auto-route executable sub-claims).
+verification budget), N3 (reasoning-trajectory anomaly detector — needs step embeddings),
+H1-full (auto-route executable sub-claims).

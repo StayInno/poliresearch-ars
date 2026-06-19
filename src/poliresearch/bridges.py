@@ -80,11 +80,35 @@ def bridge_pairs(corpus: Corpus, k: int = 6, low: float = 0.08, high: float = 0.
     return cands[:k]
 
 
-def bridge_framing(corpus: Corpus, k: int = 6) -> str:
-    pairs = bridge_pairs(corpus, k=k)
+def format_bridges(pairs: list[tuple[str, str, float]]) -> str:
     if not pairs:
         return ""
     lines = "\n".join(f'- "{a}"  <->  "{b}"' for a, b, _ in pairs)
     return ("High-yield cross-paper BRIDGES (these pairs share no authors and no citations, yet "
             "are topically adjacent — the productive middle for novel synthesis). Prefer "
             "hypotheses that connect such distant-but-coherent pairs:\n" + lines)
+
+
+def bridge_framing(corpus: Corpus, k: int = 6) -> str:
+    return format_bridges(bridge_pairs(corpus, k=k))
+
+
+def bridge_distance_profile(corpus: Corpus, bins: int = 5) -> list[tuple[float, float, int]]:
+    """N4: distribution of no-shared-author/no-shared-ref pair similarities across distance bins.
+    The similarity axis is the (inverse) bridge-distance; this lets you see where pairs sit and
+    tune the band toward the productive intermediate region rather than guessing."""
+    papers = _papers(corpus)
+    sims = []
+    for i in range(len(papers)):
+        for j in range(i + 1, len(papers)):
+            p, q = papers[i], papers[j]
+            if p.authors & q.authors or p.refs & q.refs:
+                continue
+            s = _jaccard(p.tokens, q.tokens)
+            if s > 0:
+                sims.append(s)
+    out = []
+    for b in range(bins):
+        lo, hi = b / bins, (b + 1) / bins
+        out.append((round(lo, 2), round(hi, 2), sum(1 for s in sims if lo <= s < hi)))
+    return out

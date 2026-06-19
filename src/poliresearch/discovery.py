@@ -78,12 +78,15 @@ def _norm(text: str) -> str:
 class DiscoveryEngine:
     def __init__(self, llm: LLM, mailto: str | None = None, *, max_workers: int = 8,
                  falsifier_llm: LLM | None = None, refutability_filter: bool = True,
-                 conflicting_priors: bool = False, bridge_steering: bool = True):
+                 conflicting_priors: bool = False, bridge_steering: bool = True,
+                 bridge_band: tuple[float, float] = (0.08, 0.35), perturbation_check: bool = False):
         self.generator = Generator(llm)
         self.refutability_filter = refutability_filter   # H8
         self.bridge_steering = bridge_steering           # H3
-        self.falsifier = DebatePanelFalsifier(falsifier_llm or llm,
-                                              conflicting_priors=conflicting_priors)  # H4
+        self.bridge_band = bridge_band                   # N4: tunable bridge-distance band
+        self.falsifier = DebatePanelFalsifier(
+            falsifier_llm or llm, conflicting_priors=conflicting_priors,  # H4
+            perturbation_check=perturbation_check)                         # N1
         self.verifier = UnifiedVerifier(mailto=mailto, max_workers=max_workers)
         self.synth_llm = llm
         self.max_workers = max_workers
@@ -95,17 +98,24 @@ class DiscoveryEngine:
         out = DiscoveryResult(goal=goal, corpus_papers=len({c.source for c in corpus.chunks}),
                               cycles=cycles)
 
-        bridges = ""
+        bridge_pool = []
         if self.bridge_steering:               # H3: steer toward cross-corpus bridges
-            from .bridges import bridge_framing
-            bridges = bridge_framing(corpus)
+            from .bridges import bridge_pairs
+            lo, hi = self.bridge_band
+            # N2: a LARGER pool so each cycle can be shown a FRESH rotating slice — re-injecting
+            # novelty so the distilling loop doesn't converge to near-corpus claims.
+            bridge_pool = bridge_pairs(corpus, k=max(6, rollouts * cycles), low=lo, high=hi)
 
         for cycle in range(cycles):
             # Read path = the DISTILLED notebook (not raw history): compact, curated context.
             framing = mem.context() + "\n\nPropose NOVEL hypotheses that synthesize across " \
                 "multiple papers — connections not stated in any single paper."
-            if bridges:
-                framing += "\n\n" + bridges
+            if bridge_pool:
+                from .bridges import format_bridges
+                w = max(3, rollouts)
+                start = (cycle * w) % len(bridge_pool)
+                slice_ = (bridge_pool[start:start + w] or bridge_pool[:w])  # rotate, wrap
+                framing += "\n\n" + format_bridges(slice_)
             hypotheses = self.generator.propose(goal, corpus, n=rollouts, framing=framing)
             fresh = [h for h in hypotheses if _norm(h) not in seen]
             if self.refutability_filter and fresh:

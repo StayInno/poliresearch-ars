@@ -124,7 +124,9 @@ def _cmd_discover(args, settings) -> int:
     falsifier_llm = make_llm(settings, model=settings.falsifier_model)
     engine = DiscoveryEngine(llm, mailto=settings.crossref_mailto, falsifier_llm=falsifier_llm,
                              bridge_steering=not args.no_bridge,        # H3
-                             conflicting_priors=args.priors)            # H4
+                             bridge_band=(args.bridge_low, args.bridge_high),  # N4
+                             conflicting_priors=args.priors,            # H4
+                             perturbation_check=args.perturb)           # N1
     print(f"Discovery: backend={resolve_backend(settings)}  corpus={len(corpus.chunks)} chunks  "
           f"cycles={args.cycles} x rollouts={args.rollouts}\n")
     res = engine.run(args.goal, corpus, cycles=args.cycles, rollouts=args.rollouts,
@@ -181,6 +183,20 @@ def _cmd_test_hypothesis(args, settings) -> int:
     if res.stderr and not res.success:
         print("stderr:\n" + res.stderr[-1500:])
     return 0 if res.success else 1
+
+
+def _cmd_bridges(args, settings) -> int:
+    """N4: show the cross-corpus bridge-distance profile and the selected bridge pairs."""
+    from .bridges import bridge_distance_profile, bridge_pairs
+    corpus = load_corpus(args.corpus or str(settings.corpus_dir))
+    print("Bridge-distance profile (no-shared-author/ref pair similarity bins):")
+    for lo, hi, n in bridge_distance_profile(corpus):
+        bar = "#" * min(40, n)
+        print(f"  {lo:.2f}-{hi:.2f}: {n:4d} {bar}")
+    print(f"\nSelected bridges in band [{args.bridge_low}, {args.bridge_high}]:")
+    for a, b, s in bridge_pairs(corpus, k=args.k, low=args.bridge_low, high=args.bridge_high):
+        print(f"  {s:.3f}  {a[:48]}  <->  {b[:48]}")
+    return 0
 
 
 def _cmd_sources(args, settings) -> int:
@@ -385,6 +401,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--corpus", default=None)
     s.set_defaults(func=_cmd_ingest)
 
+    s = sub.add_parser("bridges", help="Show cross-corpus bridge-distance profile + selected pairs (N4).")
+    s.add_argument("--corpus", default=None)
+    s.add_argument("--bridge-low", type=float, default=0.08)
+    s.add_argument("--bridge-high", type=float, default=0.35)
+    s.add_argument("--k", type=int, default=10)
+    s.set_defaults(func=_cmd_bridges)
+
     s = sub.add_parser("sources", help="List keyed paper sources and their enabled/disabled state.")
     s.set_defaults(func=_cmd_sources)
 
@@ -414,7 +437,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--cycles", type=int, default=3)
     s.add_argument("--rollouts", type=int, default=6, help="parallel hypotheses per cycle")
     s.add_argument("--no-bridge", action="store_true", help="disable H3 cross-corpus bridge steering")
+    s.add_argument("--bridge-low", type=float, default=0.08, help="N4 bridge-distance band floor")
+    s.add_argument("--bridge-high", type=float, default=0.35, help="N4 bridge-distance band ceiling")
     s.add_argument("--priors", action="store_true", help="enable H4 conflicting-priors abstention")
+    s.add_argument("--perturb", action="store_true", help="enable N1 perturbation-stability check")
     s.set_defaults(func=_cmd_discover)
 
     s = sub.add_parser("evaluate", help="Measure the system against labeled datasets.")

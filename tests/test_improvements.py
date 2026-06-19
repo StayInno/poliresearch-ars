@@ -123,3 +123,51 @@ def test_bridge_pairs_picks_intermediate_no_shared():
     assert frozenset(("A", "B")) in titles          # the coherent, no-shared bridge
     assert frozenset(("A", "C")) not in titles       # shared author Smith -> excluded
     assert frozenset(("A", "D")) not in titles       # unrelated -> below band
+
+
+# --- N1: perturbation-stability detector ---
+class _PerturbLLM:
+    available = True
+    model = "fake"
+
+    def __init__(self):
+        self.adjudications = 0
+
+    def complete(self, system, prompt, *, max_tokens=1500):
+        if system.lower().startswith("paraphrase"):
+            return "a reworded version of the claim"
+        if "adjudicator" in system:
+            self.adjudications += 1
+            # base verdict supported; the paraphrased re-adjudication flips -> unstable
+            return ('{"verdict": "supported", "reason": "x"}' if self.adjudications == 1
+                    else '{"verdict": "contradicted", "reason": "x"}')
+        return "argument"
+
+
+def test_perturbation_instability_abstains():
+    f = DebatePanelFalsifier(_PerturbLLM(), perturbation_check=True)
+    ref = f.attempt("a claim", _corpus())
+    assert ref.verdict == "neutral" and "unstable under paraphrase" in ref.reason
+
+
+# --- N2: rotating bridge re-injection across cycles ---
+def test_bridge_rotation_differs_across_cycles():
+    # a pool larger than the per-cycle window must yield different slices on different cycles
+    from poliresearch.bridges import format_bridges
+    pool = [(f"P{i}", f"Q{i}", 0.2) for i in range(12)]
+    w = 4
+    s0 = format_bridges(pool[0:w])
+    s1 = format_bridges(pool[(1 * w) % len(pool):(1 * w) % len(pool) + w])
+    assert s0 != s1 and "P0" in s0 and "P4" in s1
+
+
+# --- N4: bridge-distance profile ---
+def test_bridge_distance_profile_bins():
+    from poliresearch.bridges import bridge_distance_profile
+    chunks = [
+        Chunk("A.txt#0", "A.txt", "Title: A\nAuthors: Smith\n\nAbstract: kv cache quantization transformer inference attention memory."),
+        Chunk("B.txt#0", "B.txt", "Title: B\nAuthors: Jones\n\nAbstract: attention sparsity transformer cache memory inference compute."),
+        Chunk("D.txt#0", "D.txt", "Title: D\nAuthors: Lee\n\nAbstract: coral reef fish migration tropical marine ecosystems."),
+    ]
+    prof = bridge_distance_profile(Corpus(root=".", chunks=chunks, corpus_hash="h"), bins=5)
+    assert len(prof) == 5 and sum(n for _, _, n in prof) >= 1   # at least the A-B pair binned

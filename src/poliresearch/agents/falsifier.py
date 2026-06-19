@@ -161,10 +161,12 @@ _JUDGE_SYSTEM = (
 class DebatePanelFalsifier:
     """Steelman + refuter + adjudicator with a three-way verdict. Same interface as Falsifier."""
 
-    def __init__(self, llm: LLM, judge_llm: LLM | None = None, conflicting_priors: bool = False):
+    def __init__(self, llm: LLM, judge_llm: LLM | None = None, conflicting_priors: bool = False,
+                 perturbation_check: bool = False):
         self.llm = llm
         self.judge_llm = judge_llm or llm
-        self.conflicting_priors = conflicting_priors  # H4: disagreement-as-abstention
+        self.conflicting_priors = conflicting_priors    # H4: disagreement-as-abstention
+        self.perturbation_check = perturbation_check    # N1: instability-under-paraphrase signal
         self.n_votes = 3  # 3 role calls; kept for logging compatibility
 
     def attempt(self, hypothesis: str, corpus: Corpus) -> Refutation:
@@ -190,9 +192,27 @@ class DebatePanelFalsifier:
                 verdict, reason = "neutral", (f"abstain: verdicts disagree under conflicting "
                                               f"priors ({v_pos} vs {v_neg})")
 
+        # N1: a true claim should be stable under a meaning-preserving paraphrase; a verdict that
+        # FLIPS when the claim is paraphrased signals an unstable (hallucination-prone) claim.
+        if self.perturbation_check and verdict != "neutral":
+            para = self._paraphrase(hypothesis)
+            if para and para.strip().lower() != hypothesis.strip().lower():
+                v_para, _ = self._adjudicate(para, context, steel, against)
+                if v_para != verdict:
+                    verdict, reason = "neutral", (f"abstain: verdict unstable under paraphrase "
+                                                  f"({verdict} vs {v_para})")
+
         refuted = verdict == "contradicted"
         return Refutation(hypothesis=hypothesis, refuted=refuted, reason=reason,
                           grounding=grounding, verdict=verdict)
+
+    def _paraphrase(self, hypothesis: str) -> str:
+        try:
+            return self.llm.complete(
+                "Paraphrase the claim, preserving its exact meaning. Return only the paraphrase, "
+                "one sentence, no preamble.", hypothesis, max_tokens=200)
+        except Exception:
+            return hypothesis
 
     @staticmethod
     def _case_prompt(hypothesis: str, context: str) -> str:
