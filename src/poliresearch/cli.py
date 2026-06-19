@@ -350,7 +350,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("build-corpus", help="Fetch N real papers for a topic from OpenAlex (scale).")
     s.add_argument("topic")
     s.add_argument("--out", default=None)
-    s.add_argument("--papers", type=int, default=200)
+    s.add_argument("--papers", type=int, default=2000)
     s.add_argument("--fulltext", action="store_true",
                    help="also fetch open-access full text (arXiv/Unpaywall) where available")
     s.set_defaults(func=_cmd_build_corpus)

@@ -53,7 +53,7 @@ class CorpusBuilder:
         self.max_retries = max_retries
         self.backoff_base = backoff_base
 
-    def build(self, topic: str, out_dir: str | Path, max_papers: int = 200,
+    def build(self, topic: str, out_dir: str | Path, max_papers: int = 2000,
               require_abstract: bool = True, fulltext: bool = False) -> BuildResult:
         out = Path(out_dir)
         out.mkdir(parents=True, exist_ok=True)
