@@ -22,3 +22,7 @@ mlruns/
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Generated Obsidian vaults
+vault/
+vault_*/

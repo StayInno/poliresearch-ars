@@ -88,7 +88,8 @@ class CorpusBuilder:
             "per-page": str(_PER_PAGE),
             "cursor": cursor,
             "sort": "relevance_score:desc",
-            "select": "id,doi,title,publication_year,authorships,abstract_inverted_index",
+            "select": ("id,doi,title,publication_year,authorships,"
+                       "abstract_inverted_index,referenced_works"),
         }
         if self.mailto:
             params["mailto"] = self.mailto
@@ -119,7 +120,10 @@ class CorpusBuilder:
             (a.get("author") or {}).get("display_name", "") for a in work.get("authorships", [])
         )[:400]
         doi = work.get("doi") or ""
-        body = (f"Title: {title}\nYear: {year}\nAuthors: {authors}\nDOI: {doi}\n\n"
+        oa_id = (work.get("id") or "").rstrip("/").split("/")[-1]
+        refs = [w.rstrip("/").split("/")[-1] for w in (work.get("referenced_works") or [])][:60]
+        body = (f"Title: {title}\nYear: {year}\nAuthors: {authors}\nDOI: {doi}\n"
+                f"OpenAlexID: {oa_id}\nReferences: {'; '.join(refs)}\n\n"
                 f"Abstract: {abstract}\n")
         if full_text:
             body += f"\nFull text (open access):\n{full_text}\n"

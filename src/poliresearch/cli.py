@@ -142,6 +142,17 @@ def _cmd_discover(args, settings) -> int:
     return 0
 
 
+def _cmd_obsidian(args, settings) -> int:
+    """Export the corpus as an Obsidian vault (paper-to-paper links for the graph view)."""
+    from .obsidian import export_vault
+    corpus_dir = args.corpus or str(settings.corpus_dir)
+    n = export_vault(corpus_dir, args.out, top_k=args.top_k)
+    print(f"Wrote {n} paper notes to '{args.out}'.")
+    print(f"Open '{args.out}' as an Obsidian vault and use Graph view to see citation / "
+          f"shared-author / similarity links.")
+    return 0
+
+
 def _cmd_sources(args, settings) -> int:
     """List keyed paper sources and whether each is enabled (key set) or disabled."""
     from .sources import REGISTRY
@@ -346,6 +357,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("sources", help="List keyed paper sources and their enabled/disabled state.")
     s.set_defaults(func=_cmd_sources)
+
+    s = sub.add_parser("obsidian", help="Export the corpus as an Obsidian vault (graph of links).")
+    s.add_argument("--corpus", default=None)
+    s.add_argument("--out", default="./vault")
+    s.add_argument("--top-k", type=int, default=5, help="similarity links per paper")
+    s.set_defaults(func=_cmd_obsidian)
 
     s = sub.add_parser("build-corpus", help="Fetch N real papers for a topic from OpenAlex (scale).")
     s.add_argument("topic")
