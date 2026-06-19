@@ -185,6 +185,23 @@ def _cmd_test_hypothesis(args, settings) -> int:
     return 0 if res.success else 1
 
 
+def _cmd_verify_graph(args, settings) -> int:
+    """H6: order verification by betweenness centrality in a claim-dependency DAG.
+    Input JSON: {"nodes": [{"id","text"}], "edges": [["src","dst"], ...]}."""
+    from .claim_graph import ClaimGraph
+    d = json.loads(Path(args.file).read_text(encoding="utf-8"))
+    g = ClaimGraph(nodes={n["id"]: n.get("text", n["id"]) for n in d["nodes"]},
+                   edges=[tuple(e) for e in d.get("edges", [])])
+    cb = g.betweenness()
+    print("Verification priority (betweenness centrality — load-bearing first):")
+    for n in g.verification_order():
+        print(f"  {cb[n]:6.2f}  {n}: {g.nodes[n][:70]}")
+    plan = g.verify_within_budget(lambda _t: True, budget_fraction=args.budget)
+    print(f"\nAt budget={args.budget:.0%} of {len(g.nodes)} nodes -> verify {plan['checked']}")
+    print(f"  load-bearing node '{plan['most_central']}' covered: {plan['most_central_checked']}")
+    return 0
+
+
 def _cmd_bridges(args, settings) -> int:
     """N4: show the cross-corpus bridge-distance profile and the selected bridge pairs."""
     from .bridges import bridge_distance_profile, bridge_pairs
@@ -400,6 +417,11 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("ingest", help="Index a closed corpus and print its hash.")
     s.add_argument("--corpus", default=None)
     s.set_defaults(func=_cmd_ingest)
+
+    s = sub.add_parser("verify-graph", help="Centrality-ordered verification of a claim DAG (H6).")
+    s.add_argument("file")
+    s.add_argument("--budget", type=float, default=0.5, help="fraction of nodes to verify")
+    s.set_defaults(func=_cmd_verify_graph)
 
     s = sub.add_parser("bridges", help="Show cross-corpus bridge-distance profile + selected pairs (N4).")
     s.add_argument("--corpus", default=None)

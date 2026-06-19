@@ -37,6 +37,11 @@ Notably, N1/N2 fix risks the system identified **in iteration-1's own additions*
 bridge-steering (H3) + the distilling memory could converge to a low-novelty fixed point (→ N2),
 and proposed perturbation-instability as a new detector beyond the debate panel (→ N1).
 
-Still open (lower value/effort ratio, not yet built): H6 (claim-DAG betweenness-weighted
-verification budget), N3 (reasoning-trajectory anomaly detector — needs step embeddings),
-H1-full (auto-route executable sub-claims).
+## H6 — claim-DAG betweenness-weighted verification budget (shipped)
+
+| ID | Hypothesis | Implementation | Where |
+|----|------------|----------------|-------|
+| **H6** | A single load-bearing inference corrupts everything downstream, so spending verification budget by **betweenness centrality** in the claim-dependency DAG catches >40% more root errors than uniform | `ClaimGraph` (directed Brandes betweenness) + `verify_within_budget` checks the most-central nodes first; CLI `verify-graph` | `claim_graph.py`, CLI `verify-graph` |
+
+Still open (lower value/effort ratio, not yet built): N3 (reasoning-trajectory anomaly detector —
+needs step embeddings), H1-full (auto-route executable sub-claims).
