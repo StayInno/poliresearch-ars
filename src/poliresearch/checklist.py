@@ -17,8 +17,26 @@ only when no mechanical gate fails; gates 7-8 surface as pending-human, never au
 
 from __future__ import annotations
 
+import re
+
 from .citation_verifier import CitationVerifier
 from .models import Claim, ClaimType, GateResult, Verdict
+
+_STOP = {"the", "a", "an", "of", "for", "with", "and", "to", "in", "on", "is", "are", "that",
+         "this", "by", "as", "from", "be", "it", "at", "or", "we", "our", "than", "not"}
+
+
+def _content_tokens(s: str) -> set[str]:
+    return {t for t in re.findall(r"[a-z0-9]+", s.lower()) if len(t) > 2 and t not in _STOP}
+
+
+def _span_supports(claim: str, span: str, threshold: float = 0.5) -> bool:
+    """Lexical entailment proxy: most of the claim's content words must appear in the cited span.
+    A stronger version swaps this for an NLI / LLM entailment check (documented upgrade)."""
+    c, s = _content_tokens(claim), _content_tokens(span)
+    if not c:
+        return False
+    return len(c & s) / len(c) >= threshold
 
 
 def run_checklist(
@@ -80,6 +98,15 @@ def run_checklist(
         bad = [g for g in claim.grounding if g not in corpus_chunk_ids]
         detail5 = f"grounding ids not in corpus: {bad}"
     gates.append(GateResult(5, "Grounded in corpus (Closed RAG)", grounded, detail=detail5))
+
+    # Gate 5b (H2) — the grounding SPAN must actually support the claim, not just exist. Catches
+    # "citation-reasoning decoupling": a real source cited but a fabricated inferential link.
+    if claim.grounding_spans:
+        supported = any(_span_supports(claim.text, span) for span in claim.grounding_spans)
+        gates.append(GateResult(5, "Span supports the claim (entailment)", supported,
+                                detail="" if supported else
+                                "grounding span does not lexically support the claim "
+                                "(possible citation-reasoning decoupling)"))
 
     # Gate 6 — reproducibility: a corpus hash must be recorded for this run.
     repro = bool(corpus_hash)

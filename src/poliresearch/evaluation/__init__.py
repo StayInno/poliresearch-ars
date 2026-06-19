@@ -19,10 +19,12 @@ from .harness import (
     score_three_action,
     three_action_from_report,
 )
+from .temporal import split_corpus_by_year, rediscovery_rate
 
 __all__ = [
     "Metrics", "Report", "ThreeActionReport",
     "CitationExample", "ExperimentExample", "FalsificationExample",
     "evaluate_citations", "evaluate_experiments", "evaluate_falsifier", "compare_falsifier",
     "simulate_falsifier", "score_three_action", "three_action_from_report",
+    "split_corpus_by_year", "rediscovery_rate",
 ]

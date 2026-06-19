@@ -41,6 +41,29 @@ class Generator:
         raw = self.llm.complete(_SYSTEM, prompt, max_tokens=1200)
         return _parse_list(raw, n)
 
+    def refutable(self, hypotheses: list[str]) -> list[str]:
+        """H8: a generation-time abstention filter. For each hypothesis, ask for a CONCRETE
+        refutation protocol (the observation/computation that would falsify it). Hypotheses for
+        which the model cannot state a falsifier are disproportionately the unverifiable/
+        hallucinated ones, so we drop them before spending verification compute on them."""
+        if not hypotheses:
+            return []
+        numbered = "\n".join(f"{i+1}. {h}" for i, h in enumerate(hypotheses))
+        raw = self.llm.complete(
+            "For each hypothesis, state the single most concrete experiment, query, observation, "
+            "or computation that WOULD falsify it. If no concrete falsifier exists (the claim is "
+            "untestable as stated), say exactly 'NONE'. Return a JSON array of strings, one per "
+            "hypothesis, in order.",
+            f"Hypotheses:\n{numbered}",
+            max_tokens=1000,
+        )
+        protocols = _parse_list(raw, len(hypotheses))
+        kept = []
+        for h, p in zip(hypotheses, protocols):
+            if p and p.strip().upper() != "NONE" and len(p.strip()) > 8:
+                kept.append(h)
+        return kept or hypotheses[:1]  # never abstain on everything; keep one to make progress
+
 
 def _parse_list(raw: str, n: int) -> list[str]:
     raw = raw.strip()

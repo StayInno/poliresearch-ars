@@ -161,9 +161,10 @@ _JUDGE_SYSTEM = (
 class DebatePanelFalsifier:
     """Steelman + refuter + adjudicator with a three-way verdict. Same interface as Falsifier."""
 
-    def __init__(self, llm: LLM, judge_llm: LLM | None = None):
+    def __init__(self, llm: LLM, judge_llm: LLM | None = None, conflicting_priors: bool = False):
         self.llm = llm
         self.judge_llm = judge_llm or llm
+        self.conflicting_priors = conflicting_priors  # H4: disagreement-as-abstention
         self.n_votes = 3  # 3 role calls; kept for logging compatibility
 
     def attempt(self, hypothesis: str, corpus: Corpus) -> Refutation:
@@ -177,6 +178,18 @@ class DebatePanelFalsifier:
                                     max_tokens=500)
         verdict, reason = self._adjudicate(hypothesis, context, steel, against)
 
+        # H4: re-adjudicate under conflicting priors; if the two disagree, the claim is
+        # uncertain — abstain (NEUTRAL) rather than trust one framing. Disagreement is a far
+        # better signal than a single judge's self-confidence.
+        if self.conflicting_priors:
+            v_pos, _ = self._adjudicate(hypothesis, context, steel, against,
+                                        prior="Lean toward SUPPORTED unless the corpus clearly conflicts.")
+            v_neg, _ = self._adjudicate(hypothesis, context, steel, against,
+                                        prior="Lean toward CONTRADICTED unless the corpus clearly supports.")
+            if v_pos != v_neg:
+                verdict, reason = "neutral", (f"abstain: verdicts disagree under conflicting "
+                                              f"priors ({v_pos} vs {v_neg})")
+
         refuted = verdict == "contradicted"
         return Refutation(hypothesis=hypothesis, refuted=refuted, reason=reason,
                           grounding=grounding, verdict=verdict)
@@ -187,13 +200,15 @@ class DebatePanelFalsifier:
                 f"Corpus excerpts (your ONLY allowed evidence):\n{context}\n\n"
                 "State your case in 3-5 sentences.")
 
-    def _adjudicate(self, hypothesis: str, context: str, steel: str, against: str):
+    def _adjudicate(self, hypothesis: str, context: str, steel: str, against: str,
+                    prior: str = ""):
         prompt = (
             f"Hypothesis:\n{hypothesis}\n\n"
             f"Corpus excerpts:\n{context}\n\n"
             f"SUPPORTING argument:\n{steel}\n\n"
             f"OPPOSING argument:\n{against}\n\n"
-            "Render your verdict now."
+            + (f"Prior to apply: {prior}\n\n" if prior else "")
+            + "Render your verdict now."
         )
         raw = self.judge_llm.complete(_JUDGE_SYSTEM, prompt, max_tokens=400)
         return _parse_verdict(raw)

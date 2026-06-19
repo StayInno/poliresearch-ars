@@ -25,9 +25,11 @@ class TieredVerifier:
     def verify(self, claim: Claim, corpus: Corpus, *, human_reviewed: bool = False) -> Verdict:
         chunk_ids = corpus.chunk_ids()
 
-        # Synthesis claims get the expensive falsification pass; cheaper claims skip it
-        # unless they happen to carry no grounding (then we still probe them).
-        do_falsify = claim.claim_type == ClaimType.SYNTHESIS
+        # Synthesis claims get the expensive falsification pass; cheaper claims skip it.
+        # H5: hallucination concentrates in NUMERIC assertions (refuted ~3x more), so numeric
+        # claims of any type are routed to the strict path too — most of the reliability gain
+        # for a fraction of the compute.
+        do_falsify = claim.claim_type == ClaimType.SYNTHESIS or claim.is_numeric
         attempted = False
         survived: bool | None = None
         if do_falsify:

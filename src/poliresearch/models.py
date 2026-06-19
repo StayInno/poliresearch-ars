@@ -12,6 +12,20 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+def has_numeric_claim(text: str) -> bool:
+    """H5: hallucination concentrates in numeric assertions. Detect standalone quantities
+    (effect sizes, rates, dosages, %, deltas) while ignoring digits embedded in identifiers
+    (ABCA1, W4391807211) and bare publication years."""
+    import re
+    # A number not glued to surrounding letters (so 'ABCA1'/'2bit-id' don't count, but
+    # '13 nM', '40%', '7.5-fold', '2-bit' do).
+    for m in re.finditer(r"(?<![A-Za-z0-9])\d+(?:\.\d+)?(?![A-Za-z])", text):
+        tok = m.group()
+        if "." in tok or not (1900 <= int(tok) <= 2100):
+            return True
+    return False
+
+
 class ClaimType(str, enum.Enum):
     """Why a claim type matters: it sets the verification rigor (TRIZ #3)."""
 
@@ -64,6 +78,13 @@ class Claim:
     references: list[Reference] = field(default_factory=list)
     # IDs of corpus chunks the claim is grounded in (Closed-RAG grounding, gate 4/5).
     grounding: list[str] = field(default_factory=list)
+    # H2: the actual supporting sentence span(s), so gate 5 can check the span *entails* the
+    # claim (not just that a chunk id exists) — fixes "citation-reasoning decoupling".
+    grounding_spans: list[str] = field(default_factory=list)
+
+    @property
+    def is_numeric(self) -> bool:
+        return has_numeric_claim(self.text)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Claim":
@@ -72,6 +93,7 @@ class Claim:
             text=d["text"],
             claim_type=ClaimType(d.get("claim_type", "synthesis")),
             references=refs,
+            grounding_spans=list(d.get("grounding_spans", [])),
             grounding=list(d.get("grounding", [])),
         )
 
