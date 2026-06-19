@@ -1,0 +1,82 @@
+[
+  {
+    "id": "year-plus-one-tolerated",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Boiko, D.A."], "year": 2024},
+    "label": "valid",
+    "note": "year off by 1 (online vs print) - SHOULD be tolerated and accepted"
+  },
+  {
+    "id": "year-off-by-three",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Boiko, D.A."], "year": 2020},
+    "label": "invalid",
+    "note": "year wrong by 3 - subtle metadata error that should be rejected"
+  },
+  {
+    "id": "title-case-variation",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "AUTONOMOUS CHEMICAL RESEARCH WITH LARGE LANGUAGE MODELS",
+                  "authors": ["Boiko, D.A."], "year": 2023},
+    "label": "valid",
+    "note": "only case differs - normalisation should still accept"
+  },
+  {
+    "id": "title-reordered-abbreviated",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Using LLMs for autonomous chemistry research",
+                  "authors": ["Boiko, D.A."], "year": 2023},
+    "label": "valid",
+    "note": "faithful paraphrase of the SAME paper; may EXPOSE the strict title threshold (false reject)"
+  },
+  {
+    "id": "one-real-one-fabricated-author",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Boiko, D.A.", "Fakeson, Q."], "year": 2023},
+    "label": "invalid",
+    "note": "author list partly fabricated; may EXPOSE the any()-match weakness (false accept)"
+  },
+  {
+    "id": "all-fabricated-authors",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Einstein, A.", "Newton, I."], "year": 2023},
+    "label": "invalid",
+    "note": "all authors wrong - should be rejected"
+  },
+  {
+    "id": "retracted-lancet-surgisphere",
+    "reference": {"doi": "10.1016/S0140-6736(20)31180-6",
+                  "title": "Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+                  "authors": ["Mehra, M.R."], "year": 2020},
+    "label": "invalid",
+    "note": "famously RETRACTED (Surgisphere); tests gate 2 - may EXPOSE retraction false-negative"
+  },
+  {
+    "id": "arxiv-version-suffix",
+    "reference": {"arxiv_id": "2408.06292v1",
+                  "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+                  "authors": ["Lu, C."], "year": 2024},
+    "label": "valid",
+    "note": "arXiv id carries an explicit version suffix - should still resolve"
+  },
+  {
+    "id": "arxiv-year-off-three",
+    "reference": {"arxiv_id": "2408.06292",
+                  "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+                  "authors": ["Lu, C."], "year": 2021},
+    "label": "invalid",
+    "note": "real arXiv paper, year wrong by 3"
+  },
+  {
+    "id": "doi-https-uppercase",
+    "reference": {"doi": "HTTPS://DOI.ORG/10.1038/S41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Boiko, D.A."], "year": 2023},
+    "label": "valid",
+    "note": "url-prefixed, upper-cased DOI - normalisation should accept"
+  }
+]

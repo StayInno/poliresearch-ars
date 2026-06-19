@@ -1,0 +1,20 @@
+[
+  {
+    "doi": "10.1038/s41586-023-06792-0",
+    "title": "Autonomous chemical research with large language models",
+    "authors": ["Boiko, D.A.", "MacKnight, R.", "Kline, B.", "Gomes, G."],
+    "year": 2023
+  },
+  {
+    "doi": "10.1038/s41586-024-07930-y",
+    "title": "METADATA-MISMATCH CASE: real DOI but wrong authors/year -> gate 3 flags it",
+    "authors": ["Wrongname, X."],
+    "year": 1999
+  },
+  {
+    "doi": "10.9999/this-doi-does-not-exist",
+    "title": "FABRICATED CASE: DOI does not resolve -> gate 1 rejects it",
+    "authors": ["Doe, J."],
+    "year": 2025
+  }
+]

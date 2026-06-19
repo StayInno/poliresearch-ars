@@ -1,0 +1,62 @@
+[
+  {
+    "id": "doi-valid-coscientist",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Boiko, D.A.", "Gomes, G."], "year": 2023},
+    "label": "valid",
+    "note": "real Nature paper, correct metadata"
+  },
+  {
+    "id": "arxiv-valid-aiscientist",
+    "reference": {"arxiv_id": "2408.06292",
+                  "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+                  "authors": ["Lu, C.", "Ha, D."], "year": 2024},
+    "label": "valid",
+    "note": "real arXiv paper, correct metadata"
+  },
+  {
+    "id": "arxiv-valid-aiscientistv2",
+    "reference": {"arxiv_id": "2504.08066",
+                  "title": "The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search",
+                  "authors": ["Yamada, Y."], "year": 2025},
+    "label": "valid",
+    "note": "real arXiv paper"
+  },
+  {
+    "id": "doi-fabricated",
+    "reference": {"doi": "10.9999/this-doi-does-not-exist",
+                  "title": "A fabricated citation", "authors": ["Doe, J."], "year": 2025},
+    "label": "invalid",
+    "note": "DOI does not resolve - the classic hallucinated citation"
+  },
+  {
+    "id": "arxiv-fabricated",
+    "reference": {"arxiv_id": "9999.99999",
+                  "title": "A fabricated arXiv paper", "authors": ["Doe, J."], "year": 2025},
+    "label": "invalid",
+    "note": "arXiv id does not resolve"
+  },
+  {
+    "id": "doi-wrong-authors",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "Autonomous chemical research with large language models",
+                  "authors": ["Einstein, A."], "year": 2023},
+    "label": "invalid",
+    "note": "real DOI but wrong authors - citation should not be trusted as attributed"
+  },
+  {
+    "id": "doi-wrong-title",
+    "reference": {"doi": "10.1038/s41586-023-06792-0",
+                  "title": "A completely unrelated paper about marine biology",
+                  "authors": ["Boiko, D.A."], "year": 2023},
+    "label": "invalid",
+    "note": "real DOI attached to the wrong paper (citation hijacking)"
+  },
+  {
+    "id": "no-identifier",
+    "reference": {"title": "A claim with no DOI and no arXiv id", "authors": ["Smith, J."]},
+    "label": "invalid",
+    "note": "unverifiable - no truth anchor"
+  }
+]

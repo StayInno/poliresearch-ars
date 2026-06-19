@@ -1,0 +1,12 @@
+# Core verification layer (no API key needed)
+requests>=2.31
+
+# LLM provider (research agents). Anthropic Claude is the default.
+anthropic>=0.40
+
+# Optional: provenance / experiment tracking (deck Tier 1: MLflow + DVC).
+# Install if you want full run tracking; the system falls back to JSONL logs without them.
+# mlflow>=2.12
+
+# Dev / test
+pytest>=8.0

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "sort-returns-none-false",
+    "hypothesis": "list.sort() returns the sorted list (like sorted()).",
+    "code": "assert [3,1,2].sort() == [1,2,3], 'list.sort() returns None, not the list'\nprint('ok')",
+    "label": "false",
+    "note": "near-miss: conflates .sort() (in-place, returns None) with sorted()"
+  },
+  {
+    "id": "any-empty-false",
+    "hypothesis": "any([]) evaluates to True.",
+    "code": "assert any([]) == True, 'any([]) is False'\nprint('ok')",
+    "label": "false",
+    "note": "near-miss to all([]) which IS True"
+  },
+  {
+    "id": "all-empty-true",
+    "hypothesis": "all([]) evaluates to True (vacuous truth).",
+    "code": "assert all([]) == True\nprint('all-empty true')",
+    "label": "true"
+  },
+  {
+    "id": "dict-insertion-order-true",
+    "hypothesis": "Python 3.7+ dicts preserve insertion order.",
+    "code": "assert list({'b':1,'a':2,'c':3}) == ['b','a','c']\nprint('insertion order preserved')",
+    "label": "true"
+  },
+  {
+    "id": "sqrt2-square-not-exact-true",
+    "hypothesis": "In float arithmetic, (2**0.5)**2 is not exactly 2.",
+    "code": "assert (2**0.5)**2 != 2, 'rounding makes it 2.0000000000000004'\nprint('not exactly 2')",
+    "label": "true",
+    "note": "subtle: true on IEEE-754; a naive reasoner might say it equals 2"
+  },
+  {
+    "id": "round-fixes-float-true",
+    "hypothesis": "round(0.1+0.2, 10) == 0.3 even though 0.1+0.2 != 0.3.",
+    "code": "assert (0.1+0.2) != 0.3 and round(0.1+0.2,10) == 0.3\nprint('rounding recovers 0.3')",
+    "label": "true",
+    "note": "near-miss to the classic float non-associativity falsehood"
+  },
+  {
+    "id": "python-negative-modulo-true",
+    "hypothesis": "In Python, -7 % 3 == 2 (modulo follows the divisor's sign).",
+    "code": "assert -7 % 3 == 2, 'python modulo is non-negative for positive divisor'\nprint('python modulo ok')",
+    "label": "true",
+    "note": "near-miss: C/Java would give -1"
+  },
+  {
+    "id": "true-division-not-int-false",
+    "hypothesis": "In Python 3, 7/2 == 3.",
+    "code": "assert 7/2 == 3, '7/2 is 3.5; integer division is //'\nprint('ok')",
+    "label": "false",
+    "note": "near-miss: conflates / (true division) with // (floor division)"
+  }
+]

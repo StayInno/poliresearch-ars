@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Secrets — never commit your keys
+.env
+
+# Run artifacts (provenance logs + world-model snapshots)
+runs/
+
+# Generated/fetched corpora (the curated sample corpus/ IS committed; built ones are not)
+corpus_ai/
+corpus_*/
+
+# MLflow / DVC local stores
+mlruns/
+.dvc/
+
+# Local Claude Code settings
+.claude/settings.local.json

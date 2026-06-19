@@ -1,0 +1,44 @@
+[
+  {
+    "id": "coscientist-planner-survive",
+    "hypothesis": "Coscientist uses a GPT-4 'Planner' that orchestrates GOOGLE, PYTHON, DOCUMENTATION and EXPERIMENT commands.",
+    "label": "survive",
+    "note": "directly stated in corpus/coscientist.txt"
+  },
+  {
+    "id": "coscientist-novel-reaction-refute",
+    "hypothesis": "Coscientist autonomously discovered an entirely new class of chemical reaction never seen before.",
+    "label": "refute",
+    "note": "corpus says it optimises/executes KNOWN reaction classes, not new ones"
+  },
+  {
+    "id": "robin-abca1-survive",
+    "hypothesis": "Robin's analysis implicated ABCA1 upregulation as the mechanism linking ROCK inhibition to RPE phagocytosis.",
+    "label": "survive",
+    "note": "stated in corpus/robin_ripasudil.txt"
+  },
+  {
+    "id": "robin-vegf-refute",
+    "hypothesis": "Robin found that ripasudil works in dry-AMD by inhibiting VEGF signalling.",
+    "label": "refute",
+    "note": "corpus attributes the mechanism to ABCA1/phagocytosis, not VEGF"
+  },
+  {
+    "id": "aiscientistv2-tree-search-survive",
+    "hypothesis": "AI Scientist-v2 uses a progressive agentic tree search managed by an experiment-manager agent.",
+    "label": "survive",
+    "note": "stated in corpus/ai_scientist_v2.txt"
+  },
+  {
+    "id": "aiscientistv2-mainconf-refute",
+    "hypothesis": "AI Scientist-v2 had a paper accepted at the ICLR 2025 main conference track.",
+    "label": "refute",
+    "note": "corpus says a WORKSHOP (ICBINB), non-archival, later withdrawn - not main track"
+  },
+  {
+    "id": "quantum-unrelated-refute",
+    "hypothesis": "These systems demonstrate quantum advantage on Shor's algorithm for 2048-bit RSA.",
+    "label": "refute",
+    "note": "corpus is entirely silent on this - falsifier should refuse to support"
+  }
+]

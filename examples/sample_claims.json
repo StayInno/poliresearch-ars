@@ -1,0 +1,16 @@
+[
+  {
+    "text": "Coscientist autonomously executed palladium-catalysed cross-coupling reactions verified by GC-MS.",
+    "claim_type": "citation",
+    "references": [
+      {"doi": "10.1038/s41586-023-06792-0", "authors": ["Gomes, G."], "year": 2023}
+    ],
+    "grounding": ["coscientist.txt#0"]
+  },
+  {
+    "text": "This unsupported assertion has no citation and no corpus grounding.",
+    "claim_type": "synthesis",
+    "references": [],
+    "grounding": []
+  }
+]

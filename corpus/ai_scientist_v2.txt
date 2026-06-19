@@ -1,0 +1,15 @@
+The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search
+(Yamada, Lange, Lu et al., Sakana AI, 2025; arXiv:2504.08066).
+
+Method. AI Scientist-v2 runs a full computational research pipeline - hypothesis formulation,
+experiment design and execution, data analysis and visualisation, and manuscript authoring -
+using a progressive agentic tree search managed by a dedicated experiment-manager agent. Unlike
+v1 it removes dependence on human-authored code templates and generalises across ML domains, and
+it adds a Vision-Language-Model feedback loop to refine figures.
+
+Result and caveats. One of three AI-generated manuscripts submitted to an ICLR 2025 workshop
+(ICBINB) scored 6, 7, 6 (avg 6.33), exceeding the workshop acceptance threshold - claimed as the
+first fully AI-generated paper to pass peer review. Caveats: it was a non-archival workshop with
+organisers' prior consent, the manuscript was withdrawn, experiments are ML-only, and an
+independent evaluation found the "full autonomy" framing overstated (it needs seed ideas, about
+half of experiments failed, and manuscripts contained hallucinated results).

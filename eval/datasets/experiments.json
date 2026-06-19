@@ -1,0 +1,41 @@
+[
+  {
+    "id": "stable-sort-true",
+    "hypothesis": "Python's sorted() is stable (equal keys keep input order).",
+    "code": "d=[(1,'a'),(2,'b'),(1,'c'),(2,'d'),(1,'e')]\nr=sorted(d,key=lambda t:t[0])\nones=[s for f,s in r if f==1]\nassert ones==['a','c','e'], ones\nprint('stable',ones)",
+    "label": "true"
+  },
+  {
+    "id": "all-under-100-prime-false",
+    "hypothesis": "Every integer from 2 to 100 is prime.",
+    "code": "def isp(n):\n return n>1 and all(n%i for i in range(2,int(n**0.5)+1))\nassert all(isp(n) for n in range(2,101)), 'not all prime'\nprint('all prime')",
+    "label": "false",
+    "note": "obviously false; 4 is composite -> assertion fails -> rejected"
+  },
+  {
+    "id": "float-assoc-false",
+    "hypothesis": "Floating-point addition is associative: (0.1+0.2)+0.3 == 0.1+(0.2+0.3).",
+    "code": "assert (0.1+0.2)+0.3 == 0.1+(0.2+0.3), 'float add not associative'\nprint('associative')",
+    "label": "false",
+    "note": "false due to IEEE-754 rounding"
+  },
+  {
+    "id": "sum-formula-true",
+    "hypothesis": "Sum of 1..n equals n*(n+1)/2 for n up to 1000.",
+    "code": "assert all(sum(range(1,n+1))==n*(n+1)//2 for n in range(1,1001))\nprint('gauss formula holds')",
+    "label": "true"
+  },
+  {
+    "id": "set-dedup-true",
+    "hypothesis": "Converting a list to a set removes duplicates.",
+    "code": "assert len(set([1,1,2,3,3,3]))==3\nprint('dedup works')",
+    "label": "true"
+  },
+  {
+    "id": "int-overflow-false",
+    "hypothesis": "In Python, 2**100 overflows and becomes negative (like fixed-width ints).",
+    "code": "assert 2**100 < 0, 'python ints are arbitrary precision, no overflow'\nprint('overflowed')",
+    "label": "false",
+    "note": "Python ints are arbitrary precision; hypothesis is false"
+  }
+]

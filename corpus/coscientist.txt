@@ -1,0 +1,16 @@
+Coscientist: autonomous chemical research with large language models (Boiko, MacKnight, Kline & Gomes, Nature 624:570-578, 2023).
+
+Architecture. Coscientist is driven by a GPT-4 "Planner" chat-completion instance whose action
+space contains four commands: GOOGLE (web search), PYTHON (code execution in an isolated
+environment), DOCUMENTATION (search of hardware/API documentation), and EXPERIMENT (dispatch to
+laboratory automation). The Planner decomposes a high-level goal into these tool calls and
+iterates until the goal is met.
+
+Validated output. The system designed and physically executed palladium-catalysed
+Suzuki-Miyaura and Sonogashira cross-coupling reactions on an Opentrons OT-2 liquid handler.
+Product formation was confirmed by GC-MS, with the Suzuki product eluting at 9.53 minutes and
+the Sonogashira product at 12.92 minutes. The setup was semi-automated (microplates were moved
+by hand) but no human made experimental decisions.
+
+Caveat. This is the strongest peer-reviewed demonstration of autonomous experimental chemistry
+to date, but it optimises and executes known reaction classes rather than discovering new ones.

@@ -1,0 +1,19 @@
+Robin: a multi-agent system for automating scientific discovery (Ghareeb et al., 2025; later in Nature).
+
+Robin orchestrates three FutureHouse agents in iterative hypothesis -> experiment -> analysis
+cycles. Crow performs broad literature search and question answering. Falcon specialises in
+evaluating and ranking candidate molecules against the literature. Finch is the data-analysis
+agent: it runs code on experimental data (including RNA-seq), finds patterns, and produces the
+manuscript figures. Humans execute only the physical bench experiments.
+
+Discovery. Targeting dry age-related macular degeneration (dAMD), Robin hypothesised that
+enhancing retinal pigment epithelium (RPE) phagocytosis could be therapeutic. A first round found
+that the ROCK inhibitor Y-27632 increased RPE phagocytosis; Finch's RNA-seq analysis showed
+Y-27632 upregulates ABCA1, a lipid-efflux transporter, proposing the mechanism. A second round
+proposed new ROCK-inhibitor candidates, with the top hit being ripasudil, a drug already approved
+for glaucoma, repositioned here for dAMD. Reported effect: an increase in RPE phagocytosis
+relative to vehicle control.
+
+Validation strength. End-to-end in roughly 2.5 months. All hypotheses, experiment choices, and
+figures were AI-generated; the wet-lab work was human-run. Results are in vitro (cell culture),
+not clinical.
