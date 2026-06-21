@@ -32,3 +32,9 @@ vault_sdl/
 
 corpus_ars/
 vault_ars/
+
+corpus_tg/
+vault_tg/
+
+# ad-hoc discovery output
+discovery_*.txt
